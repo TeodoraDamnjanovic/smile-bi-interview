@@ -39,7 +39,7 @@ docker-compose down
 ## Output data
 
 This will fetch the product data and write it to a file named output.json, as well as send data to Kafka.
-The output data is a JSON array where each item is an object with the following structure:
+The output data is a JSON object where each item is an object with the following structure:
 {
     "price": "string",
     "shop_name": "string",
