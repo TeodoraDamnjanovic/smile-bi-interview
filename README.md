@@ -50,12 +50,7 @@ The output data is a JSON array where each item is an object with the following 
 
 ## Limitations
 
-1. Unable to Click Button to Retrieve More Data:
-
-On the page displaying all products, there is a button intended to load more data. However, the application was unable to click this button successfully. This limitation may be due to changes in the page's DOM structure, timing issues, or restrictions imposed by the webpage.
-As a workaround, the application processes the data available on the initial load of the page.
-
-2. Dockerization Issues:
+1. Dockerization Issues:
 
 The intention was to dockerize the Node.js application and include it in a Docker Compose configuration to allow for the entire setup to be run with a single command. However, when the browser is launched in headless mode (headless: true), the program does not function as expected.
 This issue may be related to the headless browser environment not handling certain operations the same way a non-headless browser would. Debugging and fixing this would require more time and possibly alternative approaches or configurations.

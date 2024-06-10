@@ -112,6 +112,21 @@ async function fetchBayerProducts() {
             height: 800
         });
 
+        // Load all products
+        await page.evaluate(async () => {
+            await new Promise((resolve, reject) => {
+              const interval = setInterval(() => {
+                const button = document.querySelector('.productOffers-listLoadMore');
+                if (button !== null) {
+                  button.click();
+                } else {
+                  clearInterval(interval);
+                  resolve();
+                }
+              }, 100);
+            });
+        });
+
         const items = await fetchItems(page);
         console.log(items);
 
