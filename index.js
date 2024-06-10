@@ -68,14 +68,21 @@ function sendToKafka(topic, data) {
 }
 
 async function fetchItems(page) {
-    const items = await page.$$eval('li.productOffers-listItem', (nodes) => nodes.map((node, index) => {
+    const itemsArray = await page.$$eval('li.productOffers-listItem', (nodes) => nodes.map((node, index) => {
         const priceWithCurrency = node.querySelector('.productOffers-listItemOfferPrice').innerText;
         const price = priceWithCurrency.split('\n')[0].trim().split(' ')[0];
         const shop_name = node.querySelector('a.productOffers-listItemOfferShopV2LogoLink').getAttribute('data-shop-name');
         return { price, shop_name, position: index + 1 };
     }));
 
-    return items;
+    validateItems(itemsArray);
+
+    const itemsObject = itemsArray.reduce((acc, item) => {
+        acc[item.position] = item;
+        return acc;
+    }, {});
+
+    return itemsObject;
 }
 
 async function fetchBayerProducts() {
@@ -129,8 +136,6 @@ async function fetchBayerProducts() {
 
         const items = await fetchItems(page);
         console.log(items);
-
-        validateItems(items);
 
         writeToFile('output.json', JSON.stringify(items));
 
