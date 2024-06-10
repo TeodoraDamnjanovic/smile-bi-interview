@@ -2,6 +2,11 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const kafka = require('kafka-node');
 
+
+const client = new kafka.KafkaClient({kafkaHost: 'localhost:9092'});
+const producer = new kafka.Producer(client);
+
+
 function validateData(data) {
     
     //I've tested the regex in inspect and it works !/^\d+,\d{2} €$/.test(data.price)
@@ -42,28 +47,31 @@ function writeToFile(filename, data) {
 }
 
 function sendToKafka(topic, data) {
-    const client = new kafka.KafkaClient({kafkaHost: 'localhost:9092'});
-    const producer = new kafka.Producer(client);
-    
-    producer.on('ready', () => {
-        const payloads = [
-            { topic: topic, messages: JSON.stringify(data) },
-        ];
+    return new Promise((resolve, reject) => {
+        const payloads = [{ topic: topic, messages: JSON.stringify(data) }];
         producer.send(payloads, (err, data) => {
             if (err) {
                 console.error('Error sending data to Kafka:', err);
+                reject(err);
             } else {
                 console.log('Successfully sent data to Kafka:', data);
+                resolve(data);
             }
         });
-
-        producer.close(() => {
-            console.log('Producer closed');
-        });
     });
+}
 
-    producer.on('error', (err) => {
-        console.error('Error with Kafka producer:', err);
+function closeKafkaConnection() {
+    return new Promise((resolve, reject) => {
+        producer.close(err => {
+            if (err) {
+                console.error('Error closing Kafka connection:', err);
+                reject(err);
+            } else {
+                console.log('Successfully closed Kafka connection');
+                resolve();
+            }
+        });
     });
 }
 
@@ -139,7 +147,8 @@ async function fetchBayerProducts() {
 
         writeToFile('output.json', JSON.stringify(items));
 
-        sendToKafka('bayer-data', items);
+        await sendToKafka('bayer-data', items);
+        await closeKafkaConnection();
     } catch (error) {
         console.error(error);
     } finally {
